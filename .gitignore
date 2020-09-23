@@ -1,0 +1,18 @@
+# files that br add after running autoreconf -vfi
+
+  INSTALL
+  Makefile.in
+  aclocal.m4
+  build/compile
+  build/config.guess
+  build/config.sub
+  build/depcomp
+  build/install-sh
+  build/ltmain.sh
+  build/missing
+  build/test-driver
+  configure
+  m4/libtool.m4
+  m4/ltversion.m4
+autom4te.cache/
+src/config.h.in~

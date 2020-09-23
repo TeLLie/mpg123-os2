@@ -26,6 +26,9 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #endif
+#if defined (__OS2__)
+#include <libcx/net.h>
+#endif
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
