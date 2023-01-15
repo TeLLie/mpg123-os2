@@ -25,7 +25,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#if defined(IPV6) && defined(__OS2__)
+#if defined (IPV6) && defined (__OS2__)
 #include <libcx/net.h>
 #endif
 #endif
