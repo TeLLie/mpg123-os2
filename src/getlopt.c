@@ -8,9 +8,9 @@
 */
 
 #include "config.h"
-#include "compat.h"
+#include "compat/compat.h"
 #include "getlopt.h"
-#include "debug.h"
+#include "common/debug.h"
 
 int loptind = 1;	/* index in argv[] */
 int loptchr = 0;	/* index in argv[loptind] */
@@ -44,7 +44,7 @@ static void setcharoption(topt *opt, char *value)
 		free(*((char**)opt->var));
 	if(value)
 	{
-		*((char **) opt->var) = compat_strdup(value);
+		*((char **) opt->var) = INT123_compat_strdup(value);
 		opt->flags |= GLO_VAR_MEM;
 	} else
 	{

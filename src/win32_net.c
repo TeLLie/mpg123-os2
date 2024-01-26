@@ -1,6 +1,14 @@
+/*
+	win32_net: Windows-specific network code
+
+	copyright 2009-2023 by the mpg123 project - free software under the terms of the LGPL 2.1
+	see COPYING and AUTHORS files in distribution or http://mpg123.org
+	initially written by Jonathan Yong (extracting out of httpget.c)
+*/
+
 #include "win32_support.h"
 #include "mpg123app.h"
-#include "debug.h"
+#include "common/debug.h"
 
 #ifdef DEBUG
 #define msgme(x) win32_net_msg(x,__FILE__,__LINE__)
@@ -63,7 +71,7 @@ void win32_net_deinit (void)
   {
     if (ws.inited >= 2 && ws.local_socket != SOCKET_ERROR)
     {
-      debug1("ws.local_socket = %"SIZE_P"", (size_p)ws.local_socket);
+      debug1("ws.local_socket = %" PRIuMAX, (uintmax_t)ws.local_socket);
       msgme_sock_err(shutdown(ws.local_socket, SD_BOTH));
       win32_net_close(ws.local_socket);
     }
@@ -89,16 +97,17 @@ static void win32_net_block(int sock)
   msgme_sock_err(ioctlsocket(ws.local_socket, FIONBIO, &mode));
 }
 
-ssize_t win32_net_read (int fildes, void *buf, size_t nbyte)
+mpg123_ssize_t win32_net_read (int fildes, void *buf, size_t nbyte)
 {
-  debug1("Attempting to read %"SIZE_P" bytes from network.", (size_p)nbyte);
-  ssize_t ret;
-  msgme_sock_err(ret = (ssize_t) recv(ws.local_socket, buf, nbyte, 0));
-  debug1("Read %"SSIZE_P" bytes from network.", (ssize_p)ret);
+  debug1("Attempting to read %zu bytes from network.", nbyte);
+  mpg123_ssize_t ret;
+  msgme_sock_err(ret = (mpg123_ssize_t) recv(ws.local_socket, buf, nbyte, 0));
+  debug1("Read %" PRIiMAX " bytes from network.", (intmax_t)ret);
 
   return ret;
 }
 
+/*
 static int get_sock_ch (int sock)
 {
   char c;
@@ -108,13 +117,14 @@ static int get_sock_ch (int sock)
     return (((int) c)&0xff);
   return -1;
 }
+*/
 
-ssize_t win32_net_write (int fildes, const void *buf, size_t nbyte)
+mpg123_ssize_t win32_net_write (int fildes, const void *buf, size_t nbyte)
 {
-  debug1("Attempting to write %"SIZE_P" bytes to network.", (size_p)nbyte);
-  ssize_t ret;
-  msgme_sock_err((ret = (ssize_t) send(ws.local_socket, buf, nbyte, 0)));
-  debug1("wrote %"SSIZE_P" bytes to network.", (ssize_t)ret);
+  debug1("Attempting to write %zu bytes to network.", nbyte);
+  mpg123_ssize_t ret;
+  msgme_sock_err((ret = (mpg123_ssize_t) send(ws.local_socket, buf, nbyte, 0)));
+  debug1("wrote %" PRIiMAX " bytes to network.", (intmax_t)ret);
 
   return ret;
 }
@@ -168,7 +178,7 @@ static int win32_net_timeout_connect(int sockfd, const struct sockaddr *serv_add
 			}
 			else
 			{
-				/*error1("error from select(): %s", strerror(errno));*/
+				/*error1("error from select(): %s", INT123_strerror(errno));*/
 				debug("error from select():");
 				msgme1;
 				return -1;
@@ -176,7 +186,7 @@ static int win32_net_timeout_connect(int sockfd, const struct sockaddr *serv_add
 		}
 		else
 		{
-			/*error1("connection failed: %s", strerror(errno));*/
+			/*error1("connection failed: %s", INT123_strerror(errno));*/
 			debug("connection failed: ");
 			msgme1;
 			return err;
@@ -186,7 +196,7 @@ static int win32_net_timeout_connect(int sockfd, const struct sockaddr *serv_add
 	{
 		if(connect(ws.local_socket, serv_addr, addrlen) == SOCKET_ERROR)
 		{
-			/*error1("connection failed: %s", strerror(errno));*/
+			/*error1("connection failed: %s", INT123_strerror(errno));*/
 			debug("connection failed");
 			msgme1;
 			return -1;

@@ -40,7 +40,7 @@ struct stream * stream_open(const char *url);
 // Read lines, with arbitrary line end, which is stripped.
 // Return number of bytes in line (including closing zero byte) or error < 0.
 // End of file returns zero, consequently.
-ssize_t stream_getline(struct stream *sd, mpg123_string *line);
+mpg123_ssize_t stream_getline(struct stream *sd, mpg123_string *line);
 void stream_close(struct stream *sd);
 
 // Use an open stream object to optionally prepare the dump and
@@ -50,6 +50,6 @@ void stream_close(struct stream *sd);
 // Return value is 0 for no error, -1 when bad.
 int dump_setup(struct stream *sd, mpg123_handle *mh);
 // Just close the dump output, not touching anything else.
-void dump_close();
+void dump_close(void);
 
 #endif
