@@ -14,7 +14,7 @@
 
 
 #include "config.h"
-#include "compat.h"
+#include "compat/compat.h"
 
 #include "terms.h"
 
@@ -24,12 +24,12 @@
 #include <windows.h>
 #include <wincon.h>
 
-#include "debug.h"
+#include "common/debug.h"
 
 static HANDLE consoleintput = INVALID_HANDLE_VALUE;
 static HANDLE consoleoutput = INVALID_HANDLE_VALUE;
 static HANDLE getconsoleintput(void){
-  DWORD mode, r;
+  DWORD mode;
   if(consoleintput == INVALID_HANDLE_VALUE){
     consoleintput = CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
     if(consoleintput == INVALID_HANDLE_VALUE || consoleintput == NULL)
@@ -55,7 +55,6 @@ int term_have_fun(int fd, int want_visuals)
         return 0;
 }
 
-static DWORD lastmode;
 int term_setup(void)
 {
   return 0;

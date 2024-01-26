@@ -1,7 +1,8 @@
 #include "config.h"
+#include "version.h"
 #include "net123.h"
-#include "compat.h"
-#include "debug.h"
+#include "compat/compat.h"
+#include "common/debug.h"
 #include <ws2tcpip.h>
 #include <winhttp.h>
 
@@ -53,6 +54,7 @@ static DWORD wrap_auth(winhttp_handle *nh){
     ret = WinHttpSetCredentials(nh->request, WINHTTP_AUTH_TARGET_SERVER, mode, nh->comps.lpszUserName, nh->comps.lpszPassword, NULL);
     return GetLastError();
   }
+  return TRUE;
 }
 
 #if DEBUG
@@ -93,19 +95,20 @@ net123_handle *net123_open_winhttp(const char *url, const char * const *client_h
   size_t ii;
   WINBOOL res;
   DWORD headerlen;
-  const LPCWSTR useragent = MPG123WSTR(PACKAGE_NAME) L"/" MPG123WSTR(PACKAGE_VERSION);
+  const LPCWSTR useragent = MPG123WSTR(PACKAGE_NAME) L"/" MPG123WSTR(MPG123_VERSION);
   WINHTTP_STATUS_CALLBACK cb;
+  net123_handle *handle = NULL;
 
   if(!WinHttpCheckPlatform())
     return NULL;
 
-  win32_utf8_wide(url, &urlW, NULL);
+  INT123_win32_utf8_wide(url, &urlW, NULL);
   if(urlW == NULL) goto cleanup;
 
   winhttp_handle *ret = calloc(1, sizeof(winhttp_handle));
   if (!ret) goto cleanup;
 
-  net123_handle *handle = calloc(1, sizeof(net123_handle));
+  handle = calloc(1, sizeof(net123_handle));
   if (!handle) {
     free(ret);
     goto cleanup;
@@ -162,7 +165,7 @@ net123_handle *net123_open_winhttp(const char *url, const char * const *client_h
   wrap_auth(ret);
 
   for(ii = 0; client_head[ii]; ii++){
-    win32_utf8_wide(client_head[ii], &headers, NULL);
+    INT123_win32_utf8_wide(client_head[ii], &headers, NULL);
     if(!headers)
       goto cleanup;
     debug1("WinHttpAddRequestHeaders add %S", headers);
@@ -178,7 +181,7 @@ net123_handle *net123_open_winhttp(const char *url, const char * const *client_h
 
   if (!res) {
     res = GetLastError();
-    error1("WinHttpSendRequest failed with %lu", res);
+    error1("WinHttpSendRequest failed with %d", res);
     if(res == ERROR_WINHTTP_SECURE_FAILURE){
       res = *(DWORD *)ret->additionalInfo;
       error("Additionally, the ERROR_WINHTTP_SECURE_FAILURE failed with:");
@@ -206,7 +209,7 @@ net123_handle *net123_open_winhttp(const char *url, const char * const *client_h
     headers = calloc(1, headerlen);
     if (!headers) goto cleanup;
     WinHttpQueryHeaders(ret->request, WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX, headers, &headerlen, WINHTTP_NO_HEADER_INDEX);
-    win32_wide_utf7(headers, &ret->headers, &ret->headers_len);
+    INT123_win32_wide_utf7(headers, &ret->headers, &ret->headers_len);
     /* bytes written, skip the terminating null, we want to stop at the \r\n\r\n */
     ret->headers_len --;
     free(headers);
@@ -221,8 +224,10 @@ net123_handle *net123_open_winhttp(const char *url, const char * const *client_h
 cleanup:
   debug("net123_open error");
   if (urlW) free(urlW);
-  net123_close(handle);
-  handle = NULL;
+  if (handle) {
+    net123_close(handle);
+    handle = NULL;
+  }
   return handle;
 }
 

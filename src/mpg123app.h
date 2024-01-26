@@ -13,12 +13,20 @@
 #define MPG123_H
 #include "config.h"
 
+#ifndef _FILE_OFFSET_BITS
+#ifdef LFS_SENSITIVE
+#ifdef LFS_LARGEFILE_64
+#define _FILE_OFFSET_BITS 64
+#endif
+#endif
+#endif
+
 /* everyone needs it */
-#include "compat.h"
+#include "compat/compat.h"
 /* import DLL symbols on windows */
 
 #include "httpget.h"
-#if WIN32
+#if _WIN32
 #include "win32_support.h"
 #endif
 
@@ -140,6 +148,7 @@ extern int playlimit;
 #endif
 
 /* why extern? */
+void play_prebuffer();
 extern int play_frame(void);
 
 extern int control_generic(mpg123_handle *fr);
